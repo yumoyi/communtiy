@@ -1,4 +1,4 @@
-package com.cy.communtiy;
+package com.cy.community;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,8 +1,8 @@
-package com.cy.communtiy.provider;
+package com.cy.community.provider;
 
 import com.alibaba.fastjson.JSON;
-import com.cy.communtiy.dto.AccessTokenDTO;
-import com.cy.communtiy.dto.GithubUser;
+import com.cy.community.dto.AccessTokenDTO;
+import com.cy.community.dto.GithubUser;
 import okhttp3.*;
 import org.springframework.stereotype.Component;
 

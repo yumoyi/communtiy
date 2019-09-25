@@ -1,4 +1,4 @@
-package com.cy.communtiy.controller;
+package com.cy.community.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;

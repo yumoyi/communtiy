@@ -1,4 +1,4 @@
-package com.cy.communtiy.dto;
+package com.cy.community.dto;
 
 import lombok.Data;
 
