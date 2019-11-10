@@ -5,6 +5,7 @@ import com.cy.community.dto.GithubUser;
 import com.cy.community.pojo.User;
 import com.cy.community.provider.GithubProvider;
 import com.cy.community.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -22,6 +23,7 @@ import java.util.UUID;
  * @since 2019-09-24 13:06
  */
 @Controller
+@Slf4j
 public class AuthorizeController {
 
     @Autowired
@@ -62,6 +64,7 @@ public class AuthorizeController {
             response.addCookie(new Cookie("token",token));
             return "redirect:/";
         }else{
+            log.error("callback get github error,{}",githubUser);
             //登陆失败
             return "redirect:/";
         }
