@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 
 /**
  * @author cy
@@ -26,7 +27,7 @@ public class NotificationController {
                           @PathVariable(name = "id") Long id) {
 
         User user = (User) request.getSession().getAttribute("user");
-        if (user == null) {
+        if (Objects.isNull(user)) {
             return "redirect:/";
         }
         NotificationDTO notificationDTO = notificationService.read(id, user);

@@ -19,14 +19,20 @@ public class IndexController {
     @Autowired
     private QuestionService questionService;
 
+    /**
+     * 主页面的跳转
+     * @param page 从那页数据开始
+     * @param size 每页显示数
+     * @param search 搜索框内容
+     * @return
+     */
     @RequestMapping("/")
-    public String index(Model model,
-                        @RequestParam(name="page",defaultValue = "1")Integer page,
+    public String index(@RequestParam(name = "page", defaultValue = "1") Integer page,
                         @RequestParam(name = "size", defaultValue = "7") Integer size,
-                        @RequestParam(name = "search", required = false) String search) {
+                        @RequestParam(name = "search", required = false) String search,Model model) {
         PaginationDTO pagination = questionService.list(search, page, size);
         model.addAttribute("search", search);
-        model.addAttribute("pagination",pagination);
+        model.addAttribute("pagination", pagination);
         return "index";
     }
 }

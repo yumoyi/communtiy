@@ -1,5 +1,6 @@
 package com.cy.community.controller;
 
+import com.cy.community.annotation.RequireLogin;
 import com.cy.community.dto.PaginationDTO;
 import com.cy.community.pojo.User;
 import com.cy.community.service.NotificationService;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 
 
 /**
@@ -27,6 +29,8 @@ public class ProfileController {
     @Autowired
     private NotificationService notificationService;
 
+
+    @RequireLogin
     @GetMapping("/profile/{action}")
     public String profile(@PathVariable(name = "action")String action,
                           HttpServletRequest request,
@@ -34,18 +38,14 @@ public class ProfileController {
                           @RequestParam(name="size",defaultValue = "2")Integer size,
                           Model model){
 
-
         User user = (User) request.getSession().getAttribute("user");
-        if(user==null){
-            return "redirect:/";
-        }
 
-        if("questions".equals(action)){
+        if(Objects.equals("questions", action)) {
             model.addAttribute("section","questions");
             model.addAttribute("sectionName","我的提问");
             PaginationDTO paginationDTO = questionService.listByUserId(user.getId(), page, size);
             model.addAttribute("pagination",paginationDTO);
-        }else if ("replies".equals(action)){
+        }else if (Objects.equals("replies",action)){
             model.addAttribute("section","replies");
             model.addAttribute("sectionName","最新回复");
             PaginationDTO paginationDTO = notificationService.list(user.getId(), page, size);

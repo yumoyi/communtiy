@@ -3,7 +3,7 @@ package com.cy.community.service.serviceimpl;
 import com.cy.community.dto.PaginationDTO;
 import com.cy.community.dto.QuestionDTO;
 import com.cy.community.dto.QuestionQueryDTO;
-import com.cy.community.exception.CustomizeErrorCode;
+import com.cy.community.enums.CustomizeErrorCode;
 import com.cy.community.exception.CustomizeException;
 import com.cy.community.mapper.QuestionExtMapper;
 import com.cy.community.mapper.QuestionMapper;
@@ -19,8 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,7 +44,7 @@ public class QuestionServiceImpl implements QuestionService {
 
         if (StringUtils.isNotBlank(search)) {
             String[] tags = StringUtils.split(search, " ");
-            search = Arrays.stream(tags).collect(Collectors.joining("|"));
+            search = String.join("|", tags);
         }
 
         PaginationDTO paginationDTO = new PaginationDTO();
@@ -103,10 +103,10 @@ public class QuestionServiceImpl implements QuestionService {
         Integer totalCount = (int) questionMapper.countByExample(example);
 
         // 计算共有多少页
-        if(totalCount%size==0){
-            totalPage=totalCount/size;
-        }else {
-            totalPage=totalCount/size+1;
+        if (Objects.equals(totalCount % size, 0)) {
+            totalPage = totalCount / size;
+        } else {
+            totalPage = totalCount / size + 1;
         }
         //控制页码数不超出范围
         if(page<1){
@@ -142,7 +142,7 @@ public class QuestionServiceImpl implements QuestionService {
     public QuestionDTO getById(Long id) {
 
         Question question = questionMapper.selectByPrimaryKey(id);
-        if(question==null){
+        if(Objects.isNull(question)){
             throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
         }
         QuestionDTO questionDTO = new QuestionDTO();
@@ -154,7 +154,7 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public void createOrUpdate(Question question) {
-        if(question.getId()==null){
+        if(Objects.isNull(question.getId())){
             //创建
             question.setGmtCreate(System.currentTimeMillis());
             question.setGmtModified(question.getGmtCreate());
@@ -194,17 +194,19 @@ public class QuestionServiceImpl implements QuestionService {
             return new ArrayList<>();
         }
         String[] tags = StringUtils.split(queryDTO.getTag(), ",");
-        String regexpTag = Arrays.stream(tags).collect(Collectors.joining("|"));
+        String regexpTag = String.join("|", tags);
         Question question = new Question();
         question.setId(queryDTO.getId());
         question.setTag(regexpTag);
 
         List<Question> questions = questionExtMapper.selectRelated(question);
-        List<QuestionDTO> questionDTOS = questions.stream().map(q -> {
-            QuestionDTO questionDTO = new QuestionDTO();
-            BeanUtils.copyProperties(q, questionDTO);
-            return questionDTO;
-        }).collect(Collectors.toList());
-        return questionDTOS;
+        List<QuestionDTO> questionsDTO = questions
+                .stream()
+                .map(q -> {
+                    QuestionDTO questionDTO = new QuestionDTO();
+                    BeanUtils.copyProperties(q, questionDTO);
+                 return questionDTO;
+                }).collect(Collectors.toList());
+        return questionsDTO;
     }
 }

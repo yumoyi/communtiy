@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author cy
@@ -24,21 +25,21 @@ public class UserServiceImpl implements UserService {
         UserExample example = new UserExample();
         example.createCriteria().andAccountIdEqualTo(user.getAccountId());
         List<User> users = userMapper.selectByExample(example);
-        if(users.size()==0){
+        if(Objects.equals(users.size(),0)){
             //添加
             user.setGmtCreate(System.currentTimeMillis());
             user.setGmtModified(user.getGmtCreate());
             userMapper.insert(user);
         }else{
             User dbUser = users.get(0);
-            User updateUSer = new User();
-            updateUSer.setGmtCreate(System.currentTimeMillis());
-            updateUSer.setAvatarUrl(user.getAvatarUrl());
-            updateUSer.setName(user.getName());
-            updateUSer.setToken(user.getToken());
+            User updateUser = new User();
+            updateUser.setGmtCreate(System.currentTimeMillis());
+            updateUser.setAvatarUrl(user.getAvatarUrl());
+            updateUser.setName(user.getName());
+            updateUser.setToken(user.getToken());
             UserExample userExample = new UserExample();
             userExample.createCriteria().andIdEqualTo(dbUser.getId());
-            userMapper.updateByExampleSelective(updateUSer, userExample);
+            userMapper.updateByExampleSelective(updateUser, userExample);
         }
 
     }

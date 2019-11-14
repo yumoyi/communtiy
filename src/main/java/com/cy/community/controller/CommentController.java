@@ -4,7 +4,7 @@ import com.cy.community.dto.CommentCreateDTO;
 import com.cy.community.dto.CommentDTO;
 import com.cy.community.dto.ResultDTO;
 import com.cy.community.enums.CommentTypeEnum;
-import com.cy.community.exception.CustomizeErrorCode;
+import com.cy.community.enums.CustomizeErrorCode;
 import com.cy.community.pojo.Comment;
 import com.cy.community.pojo.User;
 import com.cy.community.service.CommentService;
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author cy
@@ -26,17 +27,17 @@ public class CommentController {
     @Autowired
     private CommentService commentService;
 
+
+    @PostMapping("/comment")
     @ResponseBody
-    @RequestMapping(value = "/comment",method = RequestMethod.POST)
-    public Object post(@RequestBody CommentCreateDTO commentCreateDTO,
-                       HttpServletRequest request){
+    public ResultDTO post(@RequestBody CommentCreateDTO commentCreateDTO, HttpServletRequest request){
         User user = (User ) request.getSession().getAttribute("user");
-        if(user==null){
+        if(Objects.isNull(user)){
             return ResultDTO.errorOf(CustomizeErrorCode.NO_LOGIN);
 
         }
 
-        if(commentCreateDTO == null|| StringUtils.isBlank(commentCreateDTO.getContent())){
+        if(Objects.isNull(commentCreateDTO) || StringUtils.isBlank(commentCreateDTO.getContent())){
             return ResultDTO.errorOf(CustomizeErrorCode.COMMENT_IS_EMPTY);
         }
         Comment comment = new Comment();
@@ -52,10 +53,11 @@ public class CommentController {
         return ResultDTO.okOf();
     }
 
-    @ResponseBody
+
     @RequestMapping(value = "/comment/{id}",method = RequestMethod.GET)
-    public ResultDTO<List<CommentDTO>> comments(@PathVariable(name ="id")Long id){
-        List<CommentDTO> commentDTOS = commentService.listByTargetId(id, CommentTypeEnum.COMMENT);
-        return ResultDTO.okOf(commentDTOS);
+    @ResponseBody
+    public ResultDTO comments(@PathVariable(name ="id")Long id){
+        List<CommentDTO> commentsDTO = commentService.listByTargetId(id, CommentTypeEnum.COMMENT);
+        return ResultDTO.okOf(commentsDTO);
     }
 }

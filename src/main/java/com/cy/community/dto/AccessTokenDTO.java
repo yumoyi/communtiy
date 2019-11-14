@@ -8,9 +8,19 @@ import lombok.Data;
  */
 @Data
 public class AccessTokenDTO {
+    /**
+     * 客户端id
+     */
     private String client_id;
+
+    /**
+     * 客户端密钥
+     */
     private String client_secret;
     private String code;
+    /**
+     * 重定向URI
+     */
     private String redirect_uri;
     private String state;
 

@@ -4,20 +4,20 @@ import com.cy.community.dto.CommentDTO;
 import com.cy.community.enums.CommentTypeEnum;
 import com.cy.community.enums.NotificationStatusEnum;
 import com.cy.community.enums.NotificationTypeEnum;
-import com.cy.community.exception.CustomizeErrorCode;
+import com.cy.community.enums.CustomizeErrorCode;
 import com.cy.community.exception.CustomizeException;
 import com.cy.community.mapper.*;
 import com.cy.community.pojo.*;
 import com.cy.community.service.CommentService;
+import com.cy.community.util.Asserts;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
  */
 @Service
 public class CommentServiceImpl implements CommentService {
+
     @Autowired
     private CommentMapper commentMapper;
     @Autowired
@@ -42,24 +43,22 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void insert(Comment comment, User commentator) {
-        if (comment.getParentId() == null || comment.getParentId() == 0) {
+
+        if (Objects.equals(comment.getParentId(), 0L)) {
             throw new CustomizeException(CustomizeErrorCode.TARGET_PARAM_NOT_FOUND);
         }
-        if (comment.getType() == null || !CommentTypeEnum.isExit(comment.getType())) {
+        if (Objects.isNull(comment.getType())|| !CommentTypeEnum.isExit(comment.getType())) {
             throw new CustomizeException(CustomizeErrorCode.TYPE_PARAM_WRONG);
         }
         if (comment.getType().equals(CommentTypeEnum.COMMENT.getType()) ) {
             // 回复评论
             Comment dbComment = commentMapper.selectByPrimaryKey(comment.getParentId());
-            if (dbComment == null) {
-                throw new CustomizeException(CustomizeErrorCode.COMMENT_NOT_FOUND);
-            }
+
+            Asserts.isNull(dbComment, CustomizeErrorCode.COMMENT_NOT_FOUND);
 
             // 回复问题
             Question question = questionMapper.selectByPrimaryKey(dbComment.getParentId());
-            if (question == null) {
-                throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
-            }
+            Asserts.isNull(question, CustomizeErrorCode.QUESTION_NOT_FOUND);
 
             commentMapper.insert(comment);
 
@@ -74,9 +73,7 @@ public class CommentServiceImpl implements CommentService {
         } else {
             // 回复问题
             Question question = questionMapper.selectByPrimaryKey(comment.getParentId());
-            if (question == null) {
-                throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
-            }
+            Asserts.isNull(question,CustomizeErrorCode.QUESTION_NOT_FOUND);
             comment.setCommentCount(0);
             commentMapper.insert(comment);
             question.setCommentCount(1);
@@ -89,7 +86,7 @@ public class CommentServiceImpl implements CommentService {
 
     private void createNotify(Comment comment, Long receiver, String notifierName, String outerTitle, NotificationTypeEnum notificationType, Long outerId) {
         //去除自己给自己评价时显示通知
-        if (receiver .equals(comment.getCommentator())) {
+        if (Objects.equals(receiver, comment.getCommentator())) {
             return;
         }
         Notification notification = new Notification();
@@ -113,32 +110,29 @@ public class CommentServiceImpl implements CommentService {
         commentExample.setOrderByClause("gmt_create desc");
         List<Comment> comments = commentMapper.selectByExample(commentExample);
 
-        if (comments.size() == 0) {
-            return new ArrayList<>();
+        if (CollectionUtils.isEmpty(comments)) {
+            return Collections.emptyList();
         }
-        // 获取去重的评论人
-        Set<Long> commentators = comments.stream().map(comment -> comment.getCommentator()).collect(Collectors.toSet());
-        List<Long> userIds = new ArrayList();
-        userIds.addAll(commentators);
 
+
+        // 获取去重的评论人
+        List<Long> userIds = comments.stream().map(Comment::getCommentator).distinct().collect(Collectors.toList());
 
         // 获取评论人并转换为 Map
         UserExample userExample = new UserExample();
-        userExample.createCriteria()
-                .andIdIn(userIds);
+        userExample.createCriteria().andIdIn(userIds);
         List<User> users = userMapper.selectByExample(userExample);
-        Map<Long, User> userMap = users.stream().collect(Collectors.toMap(user -> user.getId(), user -> user));
 
+        Map<Long, User> userMap = users.stream().collect(Collectors.toMap(User::getId, Function.identity()));
 
         // 转换 comment 为 commentDTO
-        List<CommentDTO> commentDTOS = comments.stream().map(comment -> {
+        return comments.stream().map(comment -> {
             CommentDTO commentDTO = new CommentDTO();
             BeanUtils.copyProperties(comment, commentDTO);
             commentDTO.setUser(userMap.get(comment.getCommentator()));
             return commentDTO;
         }).collect(Collectors.toList());
 
-        return commentDTOS;
     }
 }
 

@@ -4,13 +4,14 @@ import com.cy.community.dto.NotificationDTO;
 import com.cy.community.dto.PaginationDTO;
 import com.cy.community.enums.NotificationStatusEnum;
 import com.cy.community.enums.NotificationTypeEnum;
-import com.cy.community.exception.CustomizeErrorCode;
+import com.cy.community.enums.CustomizeErrorCode;
 import com.cy.community.exception.CustomizeException;
 import com.cy.community.mapper.NotificationMapper;
 import com.cy.community.pojo.Notification;
 import com.cy.community.pojo.NotificationExample;
 import com.cy.community.pojo.User;
 import com.cy.community.service.NotificationService;
+import com.cy.community.util.Asserts;
 import org.apache.ibatis.session.RowBounds;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .andReceiverEqualTo(userId);
         Integer totalCount = (int) notificationMapper.countByExample(notificationExample);
 
-        if (totalCount % size == 0) {
+        if (Objects.equals(totalCount % size ,0)) {
             totalPage = totalCount / size;
         } else {
             totalPage = totalCount / size + 1;
@@ -65,21 +66,22 @@ public class NotificationServiceImpl implements NotificationService {
 
         List<Notification> notifications = notificationMapper.selectByExampleWithRowbounds(example, new RowBounds(offset, size));
 
-        if (notifications.size() == 0) {
+        if (Objects.equals(notifications.size(), 0)) {
             return paginationDTO;
         }
 
-        List<NotificationDTO> notificationDTOS = new ArrayList<>();
+        List<NotificationDTO> notificationsDTO = new ArrayList<>();
 
         for (Notification notification : notifications) {
             NotificationDTO notificationDTO = new NotificationDTO();
             BeanUtils.copyProperties(notification, notificationDTO);
             notificationDTO.setTypeName(NotificationTypeEnum.nameOfType(notification.getType()));
-            notificationDTOS.add(notificationDTO);
+            notificationsDTO.add(notificationDTO);
         }
-        paginationDTO.setData(notificationDTOS);
+        paginationDTO.setData(notificationsDTO);
         return paginationDTO;
     }
+
     @Override
     public Long unreadCount(Long userId) {
         NotificationExample notificationExample = new NotificationExample();
@@ -93,13 +95,11 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public NotificationDTO read(Long id, User user) {
         Notification notification = notificationMapper.selectByPrimaryKey(id);
-        if (notification == null) {
-            throw new CustomizeException(CustomizeErrorCode.NOTIFICATION_NOT_FOUND);
-        }
+
+        Asserts.isNull(notification,CustomizeErrorCode.NOTIFICATION_NOT_FOUND);
         if (!Objects.equals(notification.getReceiver(), user.getId())) {
             throw new CustomizeException(CustomizeErrorCode.READ_NOTIFICATION_FAIL);
         }
-
         notification.setStatus(NotificationStatusEnum.READ.getStatus());
         notificationMapper.updateByPrimaryKey(notification);
 

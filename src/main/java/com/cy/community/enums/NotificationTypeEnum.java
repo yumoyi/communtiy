@@ -1,5 +1,7 @@
 package com.cy.community.enums;
 
+import java.util.Objects;
+
 /**
  * @author cy
  * @since 2019-11-07 16:13
@@ -27,7 +29,7 @@ public enum NotificationTypeEnum {
 
     public static String nameOfType(int type) {
         for (NotificationTypeEnum notificationTypeEnum : NotificationTypeEnum.values()) {
-            if (notificationTypeEnum.getType() == type) {
+            if (Objects.equals(type,notificationTypeEnum.getType())) {
                 return notificationTypeEnum.getName();
             }
         }

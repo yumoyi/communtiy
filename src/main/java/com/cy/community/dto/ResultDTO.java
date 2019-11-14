@@ -1,6 +1,6 @@
 package com.cy.community.dto;
 
-import com.cy.community.exception.CustomizeErrorCode;
+import com.cy.community.enums.CustomizeErrorCode;
 import com.cy.community.exception.CustomizeException;
 import lombok.Data;
 
@@ -14,7 +14,7 @@ public class ResultDTO<T> {
     private String message;
     private T data;
 
-    public static ResultDTO errorOf(Integer code,String message){
+    private static ResultDTO errorOf(Integer code, String message) {
         ResultDTO resultDTO = new ResultDTO();
         resultDTO.setCode(code);
         resultDTO.setMessage(message);
@@ -22,11 +22,11 @@ public class ResultDTO<T> {
     }
 
     public static ResultDTO errorOf(CustomizeErrorCode errorCode) {
-        return errorOf(errorCode.getCode(),errorCode.getMessage());
+        return errorOf(errorCode.getCode(), errorCode.getMessage());
     }
 
     public static ResultDTO errorOf(CustomizeException e) {
-        return errorOf(e.getCode(),e.getMessage());
+        return errorOf(e.getCode(), e.getMessage());
     }
 
     public static ResultDTO okOf() {
@@ -37,7 +37,7 @@ public class ResultDTO<T> {
     }
 
     public static <T> ResultDTO okOf(T t) {
-        ResultDTO resultDTO = new ResultDTO();
+        ResultDTO<T> resultDTO = new ResultDTO<>();
         resultDTO.setCode(200);
         resultDTO.setMessage("请求成功");
         resultDTO.setData(t);

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 
 /**
  * @author cy
@@ -60,15 +61,15 @@ public class PublishController {
         model.addAttribute("tags", TagCache.get());
 
 
-        if(title ==null||title.equals("")){
+        if(StringUtils.isBlank(title)){
             model.addAttribute("error","标题不能为空");
             return "publish";
         }
-        if(description ==null||description.equals("")){
+        if(StringUtils.isBlank(description)){
             model.addAttribute("error","内容不能为空");
             return "publish";
         }
-        if(tag ==null||tag.equals("")){
+        if(StringUtils.isBlank(tag)){
             model.addAttribute("error","标签不能为空");
             return "publish";
         }
@@ -80,7 +81,7 @@ public class PublishController {
         }
 
         User user = (User) request.getSession().getAttribute("user");
-        if(user ==null){
+        if(Objects.isNull(user)){
             model.addAttribute("error","用户未登录");
             return "publish";
         }

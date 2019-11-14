@@ -3,16 +3,20 @@ package com.cy.community.provider;
 import com.alibaba.fastjson.JSON;
 import com.cy.community.dto.AccessTokenDTO;
 import com.cy.community.dto.GithubUser;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
+ * github登录
  * @author cy
  * @since 2019-09-24 16:25
  */
 @Component
+@Slf4j
 public class GithubProvider {
     public String getAccessToken(AccessTokenDTO accessTokenDTO){
         MediaType mediaType = MediaType.get("application/json; charset=utf-8");
@@ -25,11 +29,12 @@ public class GithubProvider {
                 .post(body)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            String string = response.body().string();
-            String token = string.split("&")[0].split("=")[1];
-            return token;
+            if(Objects.nonNull(response.body())){
+                String string = response.body().string();
+                return string.split("&")[0].split("=")[1];
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         return null;
     }
@@ -40,11 +45,13 @@ public class GithubProvider {
                 .url("https://api.github.com/user?access_token=" + accessToken)
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            String string = response.body().string();
-            GithubUser githubUser = JSON.parseObject(string, GithubUser.class);
-            return githubUser;
+            if(Objects.nonNull(response.body())){
+                String string = response.body().string();
+                GithubUser githubUser = JSON.parseObject(string, GithubUser.class);
+                return githubUser;
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         return null;
     }

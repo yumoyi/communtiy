@@ -4,7 +4,7 @@ package com.cy.community.exception;
  * @author cy
  * @since 2019-11-02 9:26
  */
-public class CustomizeException extends RuntimeException {
+public class RequireLoginException extends RuntimeException{
     private String message;
     private Integer code;
 
@@ -17,7 +17,7 @@ public class CustomizeException extends RuntimeException {
         return code;
     }
 
-    public CustomizeException(ICustomerErrorCode errorCode) {
+    public RequireLoginException(ICustomerErrorCode errorCode) {
         this.message = errorCode.getMessage();
     }
 }
